@@ -1,18 +1,1 @@
-cd Quant-Project
 
-mkdir -p src/option_pricing
-mkdir notebooks tests examples figures
-
-touch src/option_pricing/__init__.py
-touch src/option_pricing/black_scholes.py
-touch src/option_pricing/binomial_tree.py
-touch src/option_pricing/monte_carlo.py
-touch src/option_pricing/greeks.py
-touch src/option_pricing/implied_volatility.py
-
-touch tests/test_black_scholes.py
-touch tests/test_binomial_tree.py
-touch tests/test_put_call_parity.py
-
-touch examples/price_european_option.py
-1s
