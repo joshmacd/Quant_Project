@@ -1,12 +1,8 @@
-# Quant-Project
-A Python option pricing library implementing Black-Scholes, binomial tree and Monte Carlo methods and many more.
-# Quant-Project
 
-A Python quantitative finance project focused on option pricing, Monte Carlo simulation and risk modelling.
 
 ## Overview
 
-This repository is being developed as a personal quantitative finance project. The aim is to implement core models and numerical methods used in derivatives pricing and risk analysis, with clean Python code, tests and clear mathematical explanations.
+This repository is being developed as a personal quantitative finance project. The aim is to implement core models and numerical methods used in derivatives pricing and risk analysis, with clean Python code, tests and clear mathematical explanations. There will also be addition notes for each section that will be written in latex.
 
 ## Planned Features
 
@@ -17,6 +13,8 @@ This repository is being developed as a personal quantitative finance project. T
 - Implied volatility estimation
 - Convergence analysis and visualisation
 - Value-at-Risk and Expected Shortfall extensions
+- More to be added later
+-
 
 ## Project Structure
 
