@@ -13,3 +13,7 @@ print(f"The price of the European call option is: {call_price:.2f}")
 # Calculate put option price
 put_price = put_option_price(S, K, r, sigma, T)
 print(f"The price of the European put option is: {put_price:.2f}")
+
+
+#run the following command in the terminal:
+# PYTHONPATH=src python examples/price_european_option.py   
