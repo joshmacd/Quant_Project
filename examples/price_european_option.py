@@ -17,6 +17,5 @@ print(f"The price of the European put option is: {put_price:.2f}")
 
 
 #run the following command in the terminal: Mac then Windows
-# PYTHONPATH=src python examples/price_european_option.py   
-
+# PYTHONPATH=src python examples/price_european_option.py
 # $env:PYTHONPATH="src"; python examples/price_european_option.py
