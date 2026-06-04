@@ -1,4 +1,4 @@
-from Quant_Project.black_scholes import put_option_price, call_option_price
+from quant_project.black_scholes import put_option_price, call_option_price
 
 #Example variables
 S = 100  # Current stock price
