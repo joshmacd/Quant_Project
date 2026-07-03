@@ -27,6 +27,10 @@ Quant-Project/
 │   ├── greeks.py
 │   └── implied_volatility.py
 ├── tests/
+| 
 ├── examples/
+|   ├── European Option Example
+|
 ├── notebooks/
+|  ├── Black Scholes Market Notes
 └── figures/
