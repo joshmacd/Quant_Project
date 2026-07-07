@@ -5,7 +5,9 @@ from scipy.stats import norm
 #The main function, option_greeks, takes in the necessary parameters and returns a dictionary containing 
 #the option price and its greeks based on the specified option type (call or put).
 
-# Importing the necessary functions from the black_scholes module
+
+#Importing the necessary functions from the black_scholes programme which imports the nessacary paramaters
+#to calculate the greeks.
 from quant_project.black_scholes import (
     d1,
     d2,
