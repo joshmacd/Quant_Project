@@ -24,9 +24,9 @@ for name, value in results.items():
 # Expected output:
 # Black-Scholes Greeks
 #--------------------
-#price: 18.126925
-#delta: 1.000000
-#gamma: 0.000000
-#vega: 0.000000
-#theta: -4.756147
-#rho: 95.122942
+#price: 10.450584
+# delta: 0.636831
+# gamma: 0.018762
+# vega: 37.524035
+# theta: -6.414028
+# rho: 53.232482
