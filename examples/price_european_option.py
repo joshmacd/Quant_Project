@@ -8,11 +8,11 @@ r = 0.05  # Risk-free interest rate
 sigma = 0.2  # Volatility of the stock
 
 # Calculate call option price
-call_price = call_option_price(S, K, r, sigma, T)
+call_price = call_option_price(S, K, T, r, sigma)
 print(f"The price of the European call option is: {call_price:.2f}")
 
 # Calculate put option price
-put_price = put_option_price(S, K, r, sigma, T)
+put_price = put_option_price(S, K, T, r, sigma)
 print(f"The price of the European put option is: {put_price:.2f}")
 
 
