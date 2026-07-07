@@ -20,6 +20,7 @@ for name, value in results.items():
     print(f"{name}: {value:.6f}")
 
 # PYTHONPATH=src python examples/calculate_greeks.py
+
 # Expected output:
 # Black-Scholes Greeks
 #--------------------
