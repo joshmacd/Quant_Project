@@ -9,25 +9,24 @@ from quant_project.black_scholes import call_option_price, put_option_price
 
 #We use pytest to test the put-call parity for a selection of inputs
 @pytest.mark.parametrize(
-    "inputs",
+    "S, K, T, r, sigma",
     [
-        (0, 100, 1, 0.05, 0.2),
-        (100, 0, 1, 0.05, 0.2),
-        (100, 100, 0, 0.05, 0.2),
-        (100, 100, 1, 0.05, 0),
+        (100, 100, 1, 0.05, 0.2),
+        (120, 100, 0.5, 0.03, 0.15),
+        (80, 90, 2, 0.04, 0.25),
     ],
 )
-def test_invalid_inputs(inputs):
-    with pytest.raises(ValueError):
-        call_option_price(*inputs)
-        
+def test_put_call_parity(S, K, T, r, sigma):
+
+    #This finds the price of a call option.
+    call_price = call_option_price(S,K, T, r, sigma)
+
     #This finds the price of a put option.
     put_price = put_option_price(S, K, T, r, sigma)
 
-    #This is the left-hand side of the put-call parity equation.
+    #We calculate both the left and right hand sides of the 
+    #put-call parity equation.
     lhs = call_price - put_price
-
-    #This is the right-hand side of the put-call parity equation.
     rhs = S - K * np.exp(-r * T)
 
     #This asserts that the left and right sides are approximately equal.
