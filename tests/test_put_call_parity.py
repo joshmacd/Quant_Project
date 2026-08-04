@@ -30,10 +30,10 @@ def test_invalid_inputs(inputs):
     ],
 )
 def test_put_call_parity(S, K, T, r, sigma):
-    # This finds the price of a call option.
+    #This finds the price of a call option.
     call_price = call_option_price(S, K, T, r, sigma)
 
-    # This finds the price of a put option.
+    #This finds the price of a put option.
     put_price = put_option_price(S, K, T, r, sigma)
 
     #This is the left-hand side of the put-call parity equation.
