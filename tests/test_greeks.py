@@ -28,30 +28,43 @@ def test_greeks(option_type, price_function):
     r = 0.05 # Risk-free interest rate
     sigma = 0.2 # Volatility
 
-    #Calculate the option price and greeks using the analytical functions
+    #Calculate the option price and greeks 
     greeks = option_greeks(S, K, T, r, sigma, option_type)
     
     #Calculate the option price using the Black-Scholes formula
     option_price = price_function(S, K, T, r, sigma)
 
+    #The finite fifference step sizes for time, spot price, volatility and intrest rate.
+    spot_step = 0.01 
+    volatility_step = 1e-5
+    time_step = 1e-5
+    rate_step = 1e-5
+
     #Finite difference approximation for delta
-    epsilon = 1e-5 #small change in stock price/ time step
-    delta_fd = (price_function(S + epsilon, K, T, r, sigma) - price_function(S - epsilon, K, T, r, sigma)) / (2 * epsilon)
+    delta_fd = (price_function(S + spot_step, K, T, r, sigma) - price_function(S - spot_step, K, T, r, sigma)) / (2 * spot_step)
     
     #Finite difference approximation for gamma
-    gamma_fd = (price_function(S + epsilon, K, T, r, sigma) - 2 * option_price + price_function(S - epsilon, K, T, r, sigma)) / (epsilon ** 2)
+    gamma_fd = (price_function(S + spot_step, K, T, r, sigma) 
+    - 2 * option_price + price_function(S - spot_step, K, T, r, sigma)) / (spot_step ** 2)
     
     #Finite difference approximation for vega
-    vega_fd = (price_function(S, K, T, r, sigma + epsilon) - price_function(S, K, T, r, sigma - epsilon)) / (2 * epsilon)
+    vega_fd = (price_function(S, K, T, r, sigma + volatility_step)
+     - price_function(S, K, T, r, sigma - volatility_step)) / (2 * volatility_step)
     
     #Finite difference approximation for theta
-    theta_fd = (price_function(S, K, T - epsilon/365.0, r, sigma) - option_price) / (epsilon/365.0)
-    
+   theta_fd = -(
+    price_function(S, K, T + time_step, r, sigma)
+    - price_function(S, K, T - time_step, r, sigma)
+) / (2 * time_step)
+
     #Finite difference approximation for rho
-    rho_fd = (price_function(S, K, T, r + epsilon/100.0, sigma) - price_function(S, K, T, r - epsilon/100.0, sigma)) / (2 * (epsilon/100.0))
+    rho_fd = (price_function(S, K, T, r + rate_step, sigma) - 
+    price_function(S, K, T, r - rate_step, sigma)) / (2 * rate_step)
 
     # Assert that the analytical and finite difference approximations are close
-    tol = 1e-4
+
+    tol = 1e-4 #The tolerance for the comparison
+    
     assert np.isclose(greeks['delta'], delta_fd, rtol=tol, atol=tol), f"Delta mismatch: {greeks['delta']} vs {delta_fd}"
     assert np.isclose(greeks['gamma'], gamma_fd, rtol=tol, atol=tol), f"Gamma mismatch: {greeks['gamma']} vs {gamma_fd}"
     assert np.isclose(greeks['vega'], vega_fd, rtol=tol, atol=tol), f"Vega mismatch: {greeks['vega']} vs {vega_fd}"
