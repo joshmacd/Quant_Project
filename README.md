@@ -27,10 +27,18 @@ Quant-Project/
 │   ├── greeks.py
 │   └── implied_volatility.py
 ├── tests/
+|   ├── test_binomial_tree.py
+│   ├── test_black_scholes.py
+│   ├── test_greeks.py
+|   ├── test_put_call_parity.py
+|   
+|
 | 
 ├── examples/
 |   ├── European Option Example
+|   ├── Calculation of the greeks example
 |
 ├── notebooks/
 |  ├── Black Scholes Market Notes
+|  ├── Personal Git Notes
 └── figures/
