@@ -1,0 +1,615 @@
+\documentclass[a4paper,11pt,reqno]{amsart}
+% Created by Josh MacDonald.
+% These notes support my Python implementation of Black--Scholes option pricing.
+% They are also intended to organise the theory behind the code.
+
+%Page layout
+\usepackage[margin=1in]{geometry}
+\usepackage{parskip}
+
+%Fonts and maths
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{fourier}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{mathrsfs}
+\usepackage[mathcal]{eucal}
+
+%Graphics
+\usepackage{graphicx}
+\usepackage{tikz}
+
+%Format
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{booktabs}
+
+%Section styling
+\titleformat{\section}
+  {\large\bfseries}
+  {}
+  {0pt}
+  {}
+  [\titlerule]
+  
+%theorem,... enviroments
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\newtheorem{assumption}[definition]{Assumption}
+
+\newtheorem{example}[definition]{Example} \theoremstyle{plain} 
+
+\newtheorem{theorem}[definition]{Theorem}
+
+\newtheorem{proposition}[definition]{Proposition}
+
+\theoremstyle{remark} \newtheorem{remark}[definition]{Remark}
+
+%My Cmds
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\dd}{\,\mathrm{d}}
+
+\DeclareMathOperator{\Arg}{Arg}
+\DeclareMathOperator{\Log}{Log}
+
+\title{\textbf{The Black--Scholes Market}}
+\author{Josh MacDonald}
+
+\begin{document}
+
+\maketitle
+
+\vspace{-1em}
+
+\section*{Purpose of the Project}
+%Figure out how to format this nicely
+The aim of this project is to implement Black--Scholes option pricing 
+theory in Python. This work is being done for my own personal 
+development and enjoyment, but also to strengthen my understanding of 
+how mathematical models can be translated into working financial code.
+
+These notes act as a complementary guide to the project. They outline 
+the main theory behind the Black--Scholes model, derive the pricing 
+formula for European call and put options, and explain how the 
+mathematical formula is implemented computationally. In addition, there 
+may be further sections introducing other type contingent claims.
+
+It should be noted that these notes do not cover all of the probability and measure theory required for a fully rigorous treatment of the Black--Scholes model. In particular, topics such as Brownian motion, stochastic integration, martingales, filtrations and equivalent martingale measures are only discussed at the level needed for this project. A selection of textbooks are included at the end which act as references but the main content is adapted from the course in probability, measure and finance from the university of Edinburgh taught by Leonardo Tolomeo.
+
+\section*{The Black--Scholes Model}
+% 
+To begin, we will work on a filtered probability space, which is given as:
+\[
+    (\Omega,\mathcal{F},(\mathcal{F}_t)_{t\geq 0},\Prob),
+\]
+supporting a Brownian motion \(W=(W_t)_{t\geq 0}\) and the filtration \((\mathcal{F}_t)_{t\geq 0}\) represents the information available to the market up to time \(t\).
+
+In the Black--Scholes model, the market consists of two assets:
+
+\begin{itemize}
+    \item a risky asset, usually interpreted as a stock;
+    \item a riskless asset, usually interpreted as a bank account or bond.
+\end{itemize}
+
+The stock price \(S_t\) follows the stochastic differential equation (SDE):
+\[
+    \dd S_t = \mu S_t \dd t + \sigma S_t \dd W_t,
+    \qquad S_0>0,
+    \tag{1}
+\]
+where \(\mu\) is the drift (expected rate of return) and \(\sigma>0\) is the volatility.
+
+The riskless asset \(B_t\) satisfies
+\[
+    \dd B_t = rB_t \dd t,
+    \qquad B_0=1,
+    \tag{2}
+\]
+where \(r\) is the continuously compounded risk-free interest rate.
+
+In the classical Black--Scholes model, \(\mu\), \(r\) and \(\sigma\) are assumed to be constant. Under these assumptions, the solutions are:
+\[
+    S_t = S_0 \exp\left(\left(\mu-\frac{1}{2}\sigma^2\right)t+\sigma W_t\right),
+    \tag{1A}
+\]
+and
+\[
+    B_t = e^{rt}.
+    \tag{2A}
+\]
+
+The stock price is therefore lognormally distributed. This is one of 
+the key reasons why the Black--Scholes formula can be written in closed form.
+
+%Figure out how to add the acute to a character when i have better signal
+
+\begin{definition}[num\'eraire]
+
+A num\'eraire is a strictly positive price process used as a unit of account. If \(X_t\) is an asset price and \(N_t>0\) is a num\'eraire, then the discounted or relative price of \(X_t\) in units of \(N_t\) is:
+\[
+    \frac{X_t}{N_t}.
+\]
+
+\end{definition}
+
+Using the bank account \(B_t=e^{rt}\) as num\'eraire, the discounted stock price, $\widetilde{S}_t$, is:
+
+\[
+    \widetilde{S}_t = \frac{S_t}{B_t}=e^{-rt}S_t.
+\]
+
+
+\section*{Discounted Prices and No-Arbitrage Intuition}
+
+It is convenient to work with discounted prices because it expresses 
+all values in units of the riskless asset. That is, instead of 
+measuring wealth in pounds, we measure wealth relative to the bank
+account \(B_t\). This removes the deterministic growth due to the risk-free interest rate.
+
+
+We now introduce one of the most important formulas in stochastic calculus, It\"o's formula, for which we frsit define an It\"o process:
+
+\begin{definition}[It\^o process]
+An It\^o process is a stochastic process \(X=(X_t)_{t\geq 0}\) that can be written in the following form,
+\[
+    X_t
+    =
+    X_0
+    +
+    \int_0^t a_s \dd s
+    +
+    \int_0^t b_s \dd W_s,
+\]
+where \(W_t\) is a Brownian motion and \(a_t\), \(b_t\) are adapted processes satisfying suitable integrability conditions, i.e for every $T>0  $, we have that  $ \int_0^T |a_s|^2\dd s < \infty$ and $\int_0^T |b_s|^2\dd s < \infty $ a.s .
+
+As well as this, we equivalently have in differential notation the following: 
+\[
+    \dd X_t = a_t\dd t + b_t\dd W_t.
+\]
+The term \(a_t\) is called the drift coefficient, and \(b_t\) is called the diffusion coefficient.
+\end{definition}
+
+\begin{theorem}[It\"o's formula]
+
+Let \(X_t\) be an It\^o process satisfying
+\[
+    \dd X_t = a_t\dd t + b_t\dd W_t,
+\]
+where \(a_t\) and \(b_t\) are adapted processes. If \(f\in C^2(\R)\), then \(f(X_t)\) is also an
+It\^o process and satisfies
+\[
+    \dd f(X_t)
+    =
+    f'(X_t)\dd X_t
+    +
+    \frac{1}{2}f''(X_t)(\dd X_t)^2.
+\]
+Equivalently,
+\[
+    \dd f(X_t)
+    =
+    \left(
+        a_t f'(X_t)
+        +
+        \frac{1}{2}b_t^2 f''(X_t)
+    \right)\dd t
+    +
+    b_t f'(X_t)\dd W_t.
+\]
+\end{theorem}
+
+\begin{remark}
+The additional second-order term
+\[
+    \frac{1}{2}b_t^2f''(X_t)\dd t
+\]
+is the key difference between It\^o calculus and ordinary calculus. It appears because
+Brownian motion has quadratic variation \((\dd W_t)^2=\dd t\). 
+\end{remark}
+
+
+%ALSO ADD UMLAUT FOR ITO
+Now we have It\"o's formula, we can apply it to the discounted stock price, which gives us:
+\[
+    \dd \widetilde{S}_t
+    =
+    \dd(e^{-rt}S_t).
+\]
+
+Since
+\[
+    \dd(e^{-rt})=-re^{-rt}\dd t,
+\]
+we obtain
+\[
+    \dd \widetilde{S}_t
+    =
+    e^{-rt}\dd S_t - r e^{-rt}S_t\dd t.
+\]
+
+Substituting in the Black--Scholes stock dynamics
+\[
+    \dd S_t = \mu S_t\dd t+\sigma S_t\dd W_t,
+\]
+gives
+\[
+    \dd \widetilde{S}_t
+    =
+    e^{-rt}(\mu S_t\dd t+\sigma S_t\dd W_t)
+    -re^{-rt}S_t\dd t.
+\]
+
+Therefore,
+\[
+    \dd \widetilde{S}_t
+    =
+    (\mu-r)\widetilde{S}_t\dd t
+    +\sigma \widetilde{S}_t\dd W_t.
+\]
+
+This shows that the discounted stock price still has a drift term under the original probability measure \(\Prob\), unless \(\mu=r\). In general, the real-world expected return \(\mu\) is not equal to the risk-free rate \(r\).
+
+The key idea behind risk-neutral pricing is that we can move to a new probability measure \(\Q\), called the risk-neutral measure, under which the discounted stock price has no drift. Under this measure,
+\[
+    \dd \widetilde{S}_t
+    =
+    \sigma \widetilde{S}_t\dd W_t^{\Q}.
+\]
+
+Thus, under \(\Q\), the discounted stock price is a martingale. This means that its expected future discounted value is equal to its current value:
+\[
+    \widetilde{S}_t
+    =
+    \E^{\Q}\left[\widetilde{S}_T \mid \mathcal{F}_t\right].
+\]
+
+This martingale property is central to modern derivative pricing. It means that once prices are discounted by the riskless asset, there should be no predictable way to make a risk-free profit. This is closely related to the no-arbitrage principle.
+
+\section*{Self-Financing Portfolios}
+
+A trading strategy is a choice of how much wealth to hold in the stock and how much to hold in the riskless asset. Suppose a portfolio holds \(\Delta_t\) units of the stock and \(\beta_t\) units of the bank account. The value of the portfolio is
+\[
+    V_t = \Delta_t S_t + \beta_t B_t.
+\]
+
+The portfolio is called self-financing if changes in its value come only from changes in the prices of the assets already held. That is, no money is added to or withdrawn from the portfolio after it is set up.
+
+Mathematically, a self-financing portfolio satisfies
+\[
+    \dd V_t = \Delta_t \dd S_t + \beta_t \dd B_t.
+\]
+
+This idea is important because the Black--Scholes argument is based on replicating a derivative payoff using a self-financing trading strategy. If a portfolio can be constructed so that
+\[
+    V_T = h(S_T),
+\]
+then, by no-arbitrage, the price of the derivative at time \(0\) must be equal to the initial cost \(V_0\) of the replicating portfolio.
+
+If this were not true, then an arbitrage opportunity would exist. For example, if the derivative were cheaper than the replicating portfolio, one could buy the derivative and sell the portfolio. If it were more expensive, one could sell the derivative and buy the portfolio. In either case, this would create a risk-free profit, which is ruled out by the no-arbitrage assumption.
+
+
+\section*{Risk-Neutral Pricing}
+
+The Black--Scholes model prices derivatives by using a risk-neutral probability measure, usually denoted by \(\Q\). Under this measure, the discounted stock price is a martingale. Informally, this means that after discounting by the risk-free rate, the stock earns no additional expected return under \(\Q\).
+
+Under the risk-neutral measure, the stock price dynamics become
+\[
+    \dd S_t = rS_t \dd t + \sigma S_t \dd W_t^{\Q},
+\]
+where \(W_t^{\Q}\) is a Brownian motion under \(\Q\). The solution is
+\[
+    S_T = S_0 \exp\left(\left(r-\frac{1}{2}\sigma^2\right)T+\sigma W_T^{\Q}\right).
+\]
+
+
+Therefore, for a European option with payoff \(h(S_T)\), the no-arbitrage price at time \(0\) is
+\[
+    V_0 = e^{-rT}\E^{\Q}\left[h(S_T)\right].
+\]
+
+This formula is the theoretical foundation of the Black--Scholes pricing formula.
+
+
+\section*{European Type Contingent Claims}
+
+A contingent claim is a financial contract whose value depends on the value of some underlying asset. In this project, the underlying asset is the stock price \(S_t\).
+
+A European option is a contract that can only be exercised at maturity \(T\). This is different from an American option, which can be exercised at any time \(t\in[0,T]\).
+
+A European-type contingent claim has payoff
+\[
+    h = g(S_T),
+\]
+where \(g\) is a non-negative Borel measurable function.
+
+For a European call option with strike price \(K\), the payoff is
+\[
+    C_T = \max(S_T-K,0) = (S_T-K)^+.
+\]
+
+For a European put option with strike price \(K\), the payoff is
+\[
+    P_T = \max(K-S_T,0) = (K-S_T)^+.
+\]
+
+The call option gives the holder the right, but not the obligation, to buy the stock at price \(K\) at maturity. The put option gives the holder the right, but not the obligation, to sell the stock at price \(K\) at maturity.
+
+\section*{American Type Contingent Claims}
+Placeholder
+\section*{Asian and Exotic Type Contingent Claims}
+placeholder
+
+\section{The Black--Scholes Pricing Formula}
+\label{sec:black-scholes-formula}
+
+The Black--Scholes formula gives closed-form prices for European call and put options.
+It is obtained by applying the risk-neutral valuation formula to the payoff of a European option.
+
+Under the risk-neutral measure \(\Q\), the stock price satisfies
+\[
+    \dd S_t = rS_t\dd t+\sigma S_t\dd W_t^{\Q}.
+\]
+Therefore,
+\[
+    S_T
+    =
+    S_0
+    \exp\left(
+        \left(r-\frac{1}{2}\sigma^2\right)T
+        +
+        \sigma W_T^{\Q}
+    \right).
+\]
+Since \(W_T^{\Q}\sim N(0,T)\), we can write
+\[
+    W_T^{\Q}=\sqrt{T}Z,
+    \qquad
+    Z\sim N(0,1).
+\]
+Hence
+\[
+    S_T
+    =
+    S_0
+    \exp\left(
+        \left(r-\frac{1}{2}\sigma^2\right)T
+        +
+        \sigma\sqrt{T}Z
+    \right).
+\]
+This shows that \(S_T\) is lognormally distributed under the risk-neutral measure.
+
+\begin{theorem}[Black--Scholes formula]
+\label{thm:black-scholes-formula}
+In the Black--Scholes model, the time-zero price of a European call option with strike
+\(K\) and maturity \(T\) is
+\[
+    C = S_0N(d_1)-Ke^{-rT}N(d_2),
+\]
+and the time-zero price of a European put option with the same strike and maturity is
+\[
+    P = Ke^{-rT}N(-d_2)-S_0N(-d_1),
+\]
+where
+\[
+    d_1 =
+    \frac{\ln(S_0/K)+\left(r+\frac{1}{2}\sigma^2\right)T}
+    {\sigma\sqrt{T}},
+    \qquad
+    d_2 = d_1-\sigma\sqrt{T}.
+\]
+\end{theorem}
+
+Here \(N(x)\) denotes the cumulative distribution function of the standard normal
+distribution:
+\[
+    N(x)
+    =
+    \frac{1}{\sqrt{2\pi}}
+    \int_{-\infty}^{x} e^{-z^2/2}\dd z.
+\]
+
+\begin{proof}[Sketch of the call option derivation]
+The payoff of a European call option is
+\[
+    (S_T-K)^+.
+\]
+By risk-neutral valuation, its time-zero price is
+\[
+    C
+    =
+    e^{-rT}\E^{\Q}\left[(S_T-K)^+\right].
+\]
+This can be written as
+\[
+    C
+    =
+    e^{-rT}\E^{\Q}\left[(S_T-K)\mathbf{1}_{\{S_T>K\}}\right].
+\]
+Expanding the expectation gives
+\[
+    C
+    =
+    e^{-rT}
+    \left(
+        \E^{\Q}\left[S_T\mathbf{1}_{\{S_T>K\}}\right]
+        -
+        K\Q(S_T>K)
+    \right).
+\]
+
+Using the lognormal distribution of \(S_T\), one obtains
+\[
+    \Q(S_T>K)=N(d_2),
+\]
+and
+\[
+    e^{-rT}\E^{\Q}\left[S_T\mathbf{1}_{\{S_T>K\}}\right]
+    =
+    S_0N(d_1).
+\]
+Therefore,
+\[
+    C
+    =
+    S_0N(d_1)-Ke^{-rT}N(d_2).
+\]
+The put option formula follows either by a similar calculation or from put--call parity.
+\end{proof}
+
+\begin{remark}
+The Black--Scholes formula does not depend on the real-world expected return \(\mu\).
+This is because the option is priced under the risk-neutral measure \(\Q\), where the stock
+has drift \(r\), not \(\mu\). The inputs to the formula are therefore
+\[
+    S_0,\quad K,\quad T,\quad r,\quad \sigma.
+\]
+\end{remark}
+
+\begin{remark}[Interpretation of \(d_1\) and \(d_2\)]
+The quantities \(d_1\) and \(d_2\) measure the moneyness of the option after adjusting for
+interest rates, time to maturity and volatility.
+
+The term \(N(d_2)\) can be interpreted as the risk-neutral probability that the call option
+finishes in the money:
+\[
+    N(d_2)=\Q(S_T>K).
+\]
+The term \(N(d_1)\) is related to the sensitivity of the call price with respect to the current
+stock price. In fact, for a European call option, \(N(d_1)\) is the option's Delta:
+\[
+    \Delta_{\text{call}} = \frac{\partial C}{\partial S_0}=N(d_1).
+\]
+\end{remark}
+
+
+
+\section*{Put--Call Parity}
+
+Put--call parity is an important relationship between European call and put prices with the same strike price \(K\) and maturity \(T\). It is given by
+\[
+    C-P = S_0-Ke^{-rT}.
+\]
+This identity can be useful for checking the implementation. That is, if the Python program returns call and put prices that do not approximately satisfy put--call parity, then there is likely an error in the calculation.
+
+\section*{Implementation Details}
+
+The Python program takes the following inputs:
+\[
+    S_0,\quad K,\quad T,\quad r,\quad \sigma.
+\]
+
+These represent:
+
+\begin{center}
+\begin{tabular}{cl}
+\toprule
+Symbol & Meaning \\
+\midrule
+\(S_0\) & Initial stock price \\
+\(K\) & Strike price \\
+\(T\) & Time to maturity \\
+\(r\) & Risk-free interest rate \\
+\(\sigma\) & Volatility of the stock \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The program then follows these steps:
+
+\begin{enumerate}
+    \item Compute \(d_1\):
+    \[
+        d_1 =
+        \frac{\ln(S_0/K)+\left(r+\frac{1}{2}\sigma^2\right)T}
+        {\sigma\sqrt{T}}.
+    \]
+
+    \item Compute \(d_2\):
+    \[
+        d_2=d_1-\sigma\sqrt{T}.
+    \]
+
+    \item Evaluate the standard normal cumulative distribution function at \(d_1\), \(d_2\), \(-d_1\) and \(-d_2\).
+
+    \item Return the call price:
+    \[
+        C = S_0N(d_1)-Ke^{-rT}N(d_2).
+    \]
+
+    \item Return the put price:
+    \[
+        P = Ke^{-rT}N(-d_2)-S_0N(-d_1).
+    \]
+\end{enumerate}
+
+In Python, the normal cumulative distribution function can be computed using \texttt{scipy.stats.norm.cdf}. The exponential and logarithmic terms can be computed using either the standard \texttt{math} library or \texttt{numpy}.
+
+\section*{Numerical Example}
+
+We consider the following usual example, which is taken from :
+\[
+    S_0=100,\qquad K=100,\qquad T=1,\qquad r=0.05,\qquad \sigma=0.2.
+\]
+
+Then
+\[
+    d_1 =
+    \frac{\ln(100/100)+\left(0.05+\frac{1}{2}(0.2)^2\right)(1)}
+    {0.2\sqrt{1}}
+    =0.35,
+\]
+and
+\[
+    d_2 = 0.35-0.2=0.15.
+\]
+
+The Black--Scholes call price is approximately
+\[
+    C \approx 10.4506,
+\]
+and the put price is approximately
+\[
+    P \approx 5.5735.
+\]
+
+We can also verify put--call parity:
+\[
+    C-P \approx 10.4506-5.5735 = 4.8771,
+\]
+while
+\[
+    S_0-Ke^{-rT}
+    =
+    100-100e^{-0.05}
+    \approx 4.8771.
+\]
+
+Therefore, the numerical output is consistent with put--call parity.
+
+\section*{Ideas for Further Work}
+
+This project implements the Black--Scholes pricing formula for European call and put options. The mathematical theory begins with modelling the stock price as a geometric Brownian motion and using risk-neutral pricing to compute the discounted expected payoff of an option.
+
+Possible extensions to this project include adding dividend yields, pricing American Options, Exotic Options, calculating Greeks, plotting option prices as functions of input parameters, and comparing Black--Scholes prices with Monte Carlo estimates.
+
+Another idea was to implement an nice-looking interface for the option calculations.
+
+
+
+\section*{References}
+
+\begin{itemize}
+    \item Björk, T. \textit{Arbitrage Theory in Continuous Time}. Oxford University Press.
+    \item Shreve, S. \textit{Stochastic Calculus for Finance II: Continuous-Time Models}. Springer.
+    \item Hull, J. \textit{Options, Futures, and Other Derivatives}. Pearson.
+\end{itemize}
+
+\end{document}
+```

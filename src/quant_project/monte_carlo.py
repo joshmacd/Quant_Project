@@ -1,6 +1,6 @@
 import numpy as np
 
-# Simulation parameters
+#paramters for Monte Carlo simulation
 S_0 = 1.20  # Spot price in dollars
 r = 0.02  # Risk-free rate (2%)
 sigma = 0.25  # Volatility (25%)
