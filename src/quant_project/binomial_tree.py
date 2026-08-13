@@ -86,3 +86,45 @@ def binomial_tree_call(S, K, T, r, sigma, N):
 
         terminal_option_value = Z * (p * terminal_option_value[1:i+2] + q * terminal_option_value[0:i+1])
     return terminal_option_value[0]
+
+
+def binomial_tree_put(S, K, T, r, sigma, N):
+    '''
+    This function calculates the price of a EU put option using the
+    Cox-Ross-Rubinstein Model or the binomial tree model.
+
+    inputs:
+    ------
+    S: Current stock price
+    K: Strike price
+    T: Time to maturity (in years)
+    r: Risk-free interest rate
+    sigma: Volatility of the stock
+    N: Number of time steps in the binomial tree
+    
+    returns:
+    -------
+    put_price: The price of the European put option
+    '''
+
+    #Set up the price process 
+    dt, u, d, p, q = tree_parameters(T,r, sigma, N)
+
+    #Initalise the up and down movements of the stock price
+    j = np.arange(N+1) #This is the number of up movements in the stock price
+
+    #Calculate the final stock price for each node.
+    terminal_stock_price = S * (u**j) * (d**(N-j))
+
+    #calculate the option value at each terminal node
+    terminal_option_value = np.maximum(K - terminal_stock_price, 0) #For call option (K-S)^+ - put (K-S)^+
+
+    #Find the discounting factor of the call option 
+    Z = np.exp(-r * dt)
+
+    #Then using backwards induction we calculate the option price at each node of the tree
+    for i in range(N-1, -1, -1):
+
+        terminal_option_value = Z * (p * terminal_option_value[1:i+2] + q * terminal_option_value[0:i+1])
+    
+    return terminal_option_value[0]
