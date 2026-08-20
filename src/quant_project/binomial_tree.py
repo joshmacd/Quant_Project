@@ -22,28 +22,29 @@ def tree_parameters(T, r, sigma, N):
     dt: Time step size
     '''
 
-    #Parameter validation
+    # Parameter validation
     if N <= 0:
-        raise ValueError("N must be greater than 0") #The number of time steps must be a positive intger
+        raise ValueError("N must be greater than 0")  # The number of time steps must be a positive integer
+
+    if T <= 0:
+        raise ValueError("T must be greater than 0")
 
     if sigma <= 0:
-        raise ValueError("sigma must be greater than 0") #Volatility must be a positive integer
+        raise ValueError("sigma must be greater than 0")  # Volatility must be a positive integer
 
-    if not 0 <= p <= 1:
-        raise ValueError("Non-Arbitage Condition Failed:Risk-neutral probability must be between 0 and 1") 
-        #Risk neutral probability must be between 0 and 1.
-
-    #Calculate the time step 
+    # Calculate the time step
     dt = T / N
 
-    #Calculate the up and down factors
-    u = np.exp(sigma *np.sqrt(dt))
-    d = 1/u # Check the no arbitrage cond (d<e^rt<u which ensures 0<p<1).
+    # Calculate the up and down factors
+    u = np.exp(sigma * np.sqrt(dt))
+    d = 1 / u  # Check the no arbitrage condition (d < e^(r dt) < u ensures 0 < p < 1)
 
-    #Calculate the risk-neutral probability
-    p = (np.exp(r *dt) - d) / (u-d) 
-    q = 1-p # This is the probability of a down movement
+    # Calculate the risk-neutral probability
+    p = (np.exp(r * dt) - d) / (u - d)
+    q = 1 - p  # This is the probability of a down movement
 
+    if not 0 <= p <= 1:
+        raise ValueError("Non-Arbitrage Condition Failed: Risk-neutral probability must be between 0 and 1")
 
     return dt, u, d, p, q
 

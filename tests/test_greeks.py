@@ -52,10 +52,8 @@ def test_greeks(option_type, price_function):
      - price_function(S, K, T, r, sigma - volatility_step)) / (2 * volatility_step)
     
     #Finite difference approximation for theta
-   theta_fd = -(
-    price_function(S, K, T + time_step, r, sigma)
-    - price_function(S, K, T - time_step, r, sigma)
-) / (2 * time_step)
+   theta_fd = -(price_function(S, K, T + time_step, r, sigma)
+    - price_function(S, K, T - time_step, r, sigma)) / (2 * time_step)
 
     #Finite difference approximation for rho
     rho_fd = (price_function(S, K, T, r + rate_step, sigma) - 
