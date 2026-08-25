@@ -22,7 +22,8 @@ def convergence_test():
         bt_price = binomial_tree_call(S0, K, T, r, sigma, i)
         print(f"Time Steps: {i}, Binomial Tree Price: {bt_price:.4f}, Black-Scholes Price: {bs_price:.4f}, Difference: {abs(bt_price - bs_price):.4f}") 
 
+#running this files will execute the convergence test only when
+# i excute this file directly.
+
 if __name__ == "__main__":
     convergence_test()
-
-
