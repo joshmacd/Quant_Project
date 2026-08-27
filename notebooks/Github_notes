@@ -5,6 +5,10 @@ Notes for terminal commands:
 - To run a specific test file, use the command: `pytest <file_name>.py`
 - To run a specific test function, use the command: `pytest <file_name>.py::<function_name>`
 
+Example:
+ - python -m py_compile tests/test_greeks.py
+ - python -m pytest -v
+
 to check the status of the git repository, use the command: `git status` and commit any changes using the command: `git commit -m "<commit_message>"`. To push the changes to the remote repository, use the command: `git push`.
 git status
 git add tests/test_black_scholes.py
