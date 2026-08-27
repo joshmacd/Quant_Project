@@ -40,7 +40,7 @@ def create_convergence_figure():
             f"Error: {eps:.6f}"
         )
 
-    #setting up the figure and axes
+    #setting up the figures and axes
     figure, axes = plt.subplots(1, 2, figsize=(12, 5))
 
     axes[0].plot(
@@ -79,7 +79,7 @@ def create_convergence_figure():
 
     figure.tight_layout()
 
-    #This will save beside this Python file, regardless of working directory.
+    #This will save beside a pdf of the graphs.
     output_path = Path(__file__).with_name(
         "binomial_convergence.pdf"
     )
