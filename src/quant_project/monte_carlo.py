@@ -23,3 +23,39 @@ for t in range(1, num_steps):
 # Calculating the average simulated price at maturity
 average_simulated_price = np.mean(price_paths[-1])
 print(f"Average monte carlo simulated price at maturity: {average_simulated_price:.4f}")
+
+# Set up a function to price European options using Monte Carlo simulation
+def monte_carlo_option_price(
+    S,
+    K,
+    T,
+    r,
+    sigma,
+    option_type="call",
+    num_simulations=100_000,
+    seed=None,
+):
+    """Price a European option using Monte Carlo simulation."""
+    #Validating the option type
+    if option_type not in {"call", "put"}:
+        raise ValueError("option_type must be 'call' or 'put'")
+
+    #setting up a random number generator to generate standard normal random variables for the simulation
+    rng = np.random.default_rng(seed)
+    random_values = rng.standard_normal(num_simulations)
+
+    #calculating the terminal stock prices at expiration using the geometric Brownian motion formula
+    terminal_prices = S * np.exp(
+        (r - 0.5 * sigma**2) * T
+        + sigma * np.sqrt(T) * random_values
+    )
+
+    #Setting up the correct pay off functions based on the option type
+    if option_type == "call":
+        payoffs = np.maximum(terminal_prices - K, 0)
+    else:
+        payoffs = np.maximum(K - terminal_prices, 0)
+
+    discounted_payoffs = np.exp(-r * T) * payoffs
+
+    return float(np.mean(discounted_payoffs))
