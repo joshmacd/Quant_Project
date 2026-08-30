@@ -1,28 +1,34 @@
 import numpy as np
 
-#paramters for Monte Carlo simulation
-S_0 = 1.20  # Spot price in dollars
-r = 0.02  # Risk-free rate (2%)
-sigma = 0.25  # Volatility (25%)
-T = 0.5  # Time to maturity in years
-num_simulations = 10000  # Number of simulations
-num_steps = 252  # Number of steps (daily)
+def monte_carlo_simulation():
+    #paramters for Monte Carlo simulation
+    S_0 = 1.20  #Spot price
+    r = 0.02  #Risk-free intrest rate 
+    sigma = 0.25  #Volatility 
+    T = 0.5  #Time to maturity (in years)
+    num_simulations = 10000  #Number of simulations
+    num_steps = 252  #Number of simulation steps (Note: We could use 252 * T = 126 trading days)
 
-# Time increment
-dt = T / num_steps
+    # Time increment
+    dt = T / num_steps
 
-# Simulating price paths
-np.random.seed(42)  # For reproducibility
-price_paths = np.zeros((num_steps, num_simulations))
-price_paths[0] = S_0
+    # Simulating price paths
+    rng = np.random.default_rng(42)  # For reproducibility
+    price_paths = np.zeros((num_steps+1, num_simulations))
+    price_paths[0] = S_0
 
-for t in range(1, num_steps):
-    z = np.random.standard_normal(num_simulations)
-    price_paths[t] = price_paths[t-1] * np.exp((r - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * z)
+    #changing the loop to start from 1 to num_steps+1 as to include maturity in the simulation
+    for t in range(1, num_steps+1):
 
-# Calculating the average simulated price at maturity
-average_simulated_price = np.mean(price_paths[-1])
-print(f"Average monte carlo simulated price at maturity: {average_simulated_price:.4f}")
+        #We let z be a stnd normal RV using numpy's standard normal function to generate random numbers for the simulation
+        z = rng.standard_normal(num_simulations)
+        #We price each path using geometric brownian motion 
+        price_paths[t] = price_paths[t-1] * np.exp((r - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * z)
+
+    #Calculating the average simulated price at maturity
+    average_simulated_price = np.mean(price_paths[-1])
+    print(f"Average monte carlo simulated price at maturity: {average_simulated_price:.4f}")
+
 
 # Set up a function to price European options using Monte Carlo simulation
 def monte_carlo_option_price(
@@ -59,3 +65,7 @@ def monte_carlo_option_price(
     discounted_payoffs = np.exp(-r * T) * payoffs
 
     return float(np.mean(discounted_payoffs))
+
+
+if __name__ == "__main__":
+    monte_carlo_simulation()
