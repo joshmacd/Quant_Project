@@ -17,24 +17,25 @@ def implied_volatility_via_bisection(
     max_iterations = 300
 ):
 
-''' Calculate the implied volatility of a European option using the bisection method. This function using bisection method the narrow down
-    the range of possible volatilities until it finds a value that produces a theorectical option price that is close 'enough' to the market price of an option using 
-    the black - scholes fomula.
 
-    inputs:
-        marketprice: The market price of the option.
-        S: The current stock price.
-        K: The strike price of the option.
-        T: The time to maturity.
-        r: The risk-free interest rate.
-        option_type: "call" for call options, "put" for put options.
-        lower_bound: Lower bound for volatlity search (1e-6).
-        upper_bound: Upper bound for volatility search ( 5.0).
-        tol: Tolerance for convergence ( 1e-6).
-        max_iterations: Maximum number of iterations ( 300).
+    ''' Calculate the implied volatility of a European option using the bisection method. This function using bisection method the narrow down
+        the range of possible volatilities until it finds a value that produces a theorectical option price that is close 'enough' to the market price of an option using 
+        the black - scholes fomula.
 
-    returns:
-        The implied volatility of the option and the number of iterations it took to converge.
+        inputs:
+            marketprice: The market price of the option.
+            S: The current stock price.
+            K: The strike price of the option.
+            T: The time to maturity.
+            r: The risk-free interest rate.
+            option_type: "call" for call options, "put" for put options.
+            lower_bound: Lower bound for volatlity search (1e-6).
+            upper_bound: Upper bound for volatility search ( 5.0).
+            tol: Tolerance for convergence ( 1e-6).
+            max_iterations: Maximum number of iterations ( 300).
+
+        returns:
+            The implied volatility of the option and the number of iterations it took to converge.
     '''
 
     #Validating the option parameters
