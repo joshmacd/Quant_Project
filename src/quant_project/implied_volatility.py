@@ -17,7 +17,7 @@ def implied_volatility_via_bisection(
     max_iterations = 300
 ):
 
-''' Calculate the implied volatility of a European option using the bisection method. This function using newton-raphson method the narrow down
+''' Calculate the implied volatility of a European option using the bisection method. This function using bisection method the narrow down
     the range of possible volatilities until it finds a value that produces a theorectical option price that is close 'enough' to the market price of an option using 
     the black - scholes fomula.
 
@@ -66,10 +66,30 @@ def implied_volatility_via_bisection(
     if marketprice < min_price or marketprice > max_price:
         raise ValueError("Market price is not within the valid range for the given option parameters.")
 
-    #Initalise the lower and uppper price bounds for the biscetion method
-    lower_price_bound = price_function(S,K,T,r, lower_volatility)
-    upper_price_bound = price_function(S,K,T,r, upper_volatility)
+    #Initalise the lower and uppper price bounds for the biscetion method at the lower and upper bounds for volatility
+    lower_price_bound = option_price_func(S, K, T, r, lower_bound)
+    upper_price_bound = option_price_func(S, K, T, r, upper_bound)
 
-    #next is the root-finding method - first check the volatility interval contains a soln then using loop over each itteration 
-    #using the bisection method (a+b)/2 find a midpoint volatilty abd set it as the market volatility . Finally test for convergance
+    #Checking if the market price is between the lower and upper price bounds to see if we have a solution in the volatility interval
+    if marketprice < lower_price_bound or marketprice > upper_price_bound:
+        raise ValueError("Market price is not within the valid range for the given volatility bounds.")
 
+    #Now use the bisection method to find the implied volatility
+    for iteration in range(1, max_iterations + 1):
+
+        #initalise the midpoint volatity and calculate the option price at that given volatility
+        mid_vol = (lower_bound + upper_bound) / 2
+        mid_price = option_price_func(S, K, T, r, mid_vol)
+
+        #Now we check if how close the midpoint price is to the 'market price'
+        if abs(mid_price - marketprice) < tol:
+            return mid_vol, iteration
+
+        #We adjust bounds based on the comparison of the midpoint price and the market price to shrink the inteval 
+        if mid_price < marketprice:
+            lower_bound = mid_vol
+        else:
+            upper_bound = mid_vol
+    
+    #raise an error if the bisection mehtod doesnt converge with the max number of iterations
+    raise RuntimeError("Bisection method did not converge within the maximum number of iterations.")
