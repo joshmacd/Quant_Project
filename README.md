@@ -21,7 +21,7 @@ Alongside the Python implementations, additional mathematical notes are being wr
 -
 
 ## Project Structure
-text '''
+''' text
 Quant_Project/
 ├── .gitignore
 ├── LICENSE
