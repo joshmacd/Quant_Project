@@ -11,9 +11,10 @@ from quant_project.black_scholes import call_option_price, put_option_price
 @pytest.mark.parametrize(
     "S, K, T, r, sigma",
     [
-        (100, 100, 1, 0.05, 0.2),
-        (120, 100, 0.5, 0.03, 0.15),
-        (80, 90, 2, 0.04, 0.25),
+        (100, 100, 1, 0.05, 0.20),
+        (80, 100, 0.25, 0.03, 0.30),
+        (120, 100, 2, 0.07, 0.15),
+        (100, 110, 0.5, -0.01, 0.25),
     ],
 )
 def test_put_call_parity(S, K, T, r, sigma):
@@ -24,10 +25,32 @@ def test_put_call_parity(S, K, T, r, sigma):
     #This finds the price of a put option.
     put_price = put_option_price(S, K, T, r, sigma)
 
-    #We calculate both the left and right hand sides of the 
-    #put-call parity equation.
-    lhs = call_price - put_price
-    rhs = S - K * np.exp(-r * T)
+    #using numpy's isclose function where atol is the absolute tolerance parameter and rtol is the relative tolerance parameter
+    assert np.isclose(
+        call_price - put_price,
+        S - K * np.exp(-r * T),
+        rtol=1e-10,
+        atol=1e-10,
+    )
 
-    #This asserts that the left and right sides are approximately equal.
-    assert np.isclose(lhs, rhs), f"Put-call parity does not hold: {lhs} != {rhs}"
+#Using pytest to parameterise the price functions and the inputs for our tests
+@pytest.mark.parametrize(
+    "price_function", [call_option_price, put_option_price]
+)
+@pytest.mark.parametrize(
+    "inputs",
+    [
+        (0, 100, 1, 0.05, 0.2),
+        (100, 0, 1, 0.05, 0.2),
+        (100, 100, 0, 0.05, 0.2),
+        (100, 100, 1, 0.05, 0),
+        (100, 100, 1, 0.05, -0.2),
+    ],
+)
+
+#Define a function to test some invalid inputs and test the program under these inputs
+def test_invalid_inputs(price_function, inputs):
+    with pytest.raises(ValueError):
+        price_function(*inputs)
+
+# cd /workspaces/Quant_Project PYTHONPATH=src pytest tests/test_put_call_parity.py
