@@ -2,8 +2,6 @@
 
 ## Overview
 
-## Overview
-
 This repository is being developed as a personal quantitative finance project. The aim is to implement core models and numerical methods used in derivatives pricing and risk analysis using clean Python code, testing and clear mathematical explanations.
 
 Alongside the Python implementations, additional mathematical notes are being written in LaTeX to explore the theory underlying each model.
