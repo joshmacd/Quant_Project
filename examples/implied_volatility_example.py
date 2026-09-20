@@ -18,6 +18,7 @@ imp_vol, iterations = implied_volatility_via_bisection(market_price, S, K, T, r,
 print("Implied volatility:", imp_vol)
 print("Iterations:", iterations)
 
+#PYTHONPATH=src python3 examples/implied_volatility_example.py
 #The expected output of the code is:
 #market_price: 10.450583572185565
 #Implied volatility: 0.2000000242072642
