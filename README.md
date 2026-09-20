@@ -2,8 +2,6 @@
 
 ## Overview
 
-## Overview
-
 This repository is being developed as a personal quantitative finance project. The aim is to implement core models and numerical methods used in derivatives pricing and risk analysis using clean Python code, testing and clear mathematical explanations.
 
 Alongside the Python implementations, additional mathematical notes are being written in LaTeX to explore the theory underlying each model.
@@ -21,47 +19,32 @@ Alongside the Python implementations, additional mathematical notes are being wr
 -
 
 ## Project Structure
-text '''
+
+```text
 Quant_Project/
-├── .gitignore
-├── LICENSE
-├── README.md
-├── pytest.ini
-│
-├── src/
-│   └── quant_project/
-│       ├── __init__.py
-│       ├── black_scholes.py
-│       ├── binomial_tree.py
-│       ├── greeks.py
-│       ├── implied_volatility.py
-│       ├── monte_carlo.py
-│       └── monte_carlo_option_pricing.py
-│
+├── src/quant_project/
+│   ├── __init__.py
+│   ├── black_scholes.py
+│   ├── greeks.py
+│   ├── binomial_tree.py
+│   ├── monte_carlo.py
+│   └── implied_volatility.py
+├── examples/
+│   ├── price_european_option.py
+│   └── calculate_greeks.py
 ├── tests/
 │   ├── conftest.py
-│   ├── convergance_binomial_tree.py
 │   ├── test_black_scholes.py
 │   ├── test_greeks.py
+│   ├── test_binomial_tree.py
 │   └── test_put_call_parity.py
-│
-├── examples/
-│   ├── binomial_tree_example_call.py
-│   ├── binomial_tree_example_put.py
-│   ├── calculate_greeks.py
-│   ├── implied_volatility_example.py
-│   └── price_european_option.py
-│
+├── notebooks/
+│   └── Black_Scholes_Market.pdf
 ├── figures/
-│   ├── binomial_convergence.py
-│   └── binomial_convergence.pdf
-│
-└── notebooks/
-    ├── Black_Scholes_Market.pdf
-    ├── Github_notes
-    └── Tex/
-        └── Black_Scholes_market(Latex)
-'''
+├── pytest.ini
+├── LICENSE
+└── README.md
+```
 ## Technologies
 
 - Python
