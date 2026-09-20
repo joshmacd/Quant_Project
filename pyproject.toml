@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quant-project"
+version = "0.1.0"
+description = "Derivatives pricing and risk analysis in Python"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "scipy",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+plots = ["matplotlib"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
