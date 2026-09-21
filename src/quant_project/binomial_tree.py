@@ -1,50 +1,62 @@
 #Importing the necessary libraries
 import numpy as np
 
+
+def _validate_number(name, value, *, positive=False):
+    """Require a finite real number, optionally strictly positive.
+    --------------------------------------------------------------
+    name is used in error messages, such as "S must be finite".
+    positive=True additionally requires the value to exceed zero.
+    
+    """
+    #python treats booleans as integers (i.e: True = 1), the isinstance function checks if the value is a specfic data type and return either T or F
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, float, np.integer, np.floating)):
+        raise ValueError(f"{name} must be a finite real number")
+
+    #Raise an error if the value is NaN or infinity
+    if not np.isfinite(value):
+        raise ValueError(f"{name} must be finite")
+
+    
+    if positive and value <= 0:
+        raise ValueError(f"{name} must be greater than 0")
+
+
 def tree_parameters(T, r, sigma, N):
-    '''
-    This function calculates the parameters for the binomial tree model.
-    Set up a testing module to check validity of the parameters.
+    """
+    Calculate the Cox–Ross–Rubinstein tree parameters.
 
-    inputs:
-    ------
-    T: Time to maturity (in years)
-    r: Risk-free interest rate
-    sigma: Volatility of the stock
-    N: Number of time steps in the binomial tree
+    Inputs:
+        T: Time to maturity in years.
+        r: Continuously compounded risk-free interest rate.
+        sigma: Annualised volatility.
+        N: Positive integer number of time steps.
 
-    returns:
-    -------
-    u: Up factor
-    d: Down factor
-    p: Risk-neutral probability
-    q : 1-p, the probability of a down movement
-    dt: Time step size
-    '''
+    Returns:
+        dt: Time step size.
+        u: Up factor.
+        d: Down factor.
+        p: Risk-neutral up probability.
+        q: Risk-neutral down probability.
+    """
+    if (isinstance(N, (bool, np.bool_)) or not isinstance(N, (int, np.integer)) or N <= 0):
+        raise ValueError("N must be a positive integer")
 
-    # Parameter validation
-    if N <= 0:
-        raise ValueError("N must be greater than 0")  # The number of time steps must be a positive integer
+    #Validate the time to maturity, intrest rate and volatility
+    _validate_number("T", T, positive=True)
+    _validate_number("r", r)
+    _validate_number("sigma", sigma, positive=True)
 
-    if T <= 0:
-        raise ValueError("T must be greater than 0")
+    dt = T / N #define the time step
+    u = np.exp(sigma * np.sqrt(dt)) #define the 'up factor'
+    d = 1 / u #define the 'down factor'
 
-    if sigma <= 0:
-        raise ValueError("sigma must be greater than 0")  # Volatility must be a positive integer
+    p = (np.exp(r * dt) - d) / (u - d) #define the 'up probability'
+    q = 1 - p #define the 'down probability'
 
-    # Calculate the time step
-    dt = T / N
-
-    # Calculate the up and down factors
-    u = np.exp(sigma * np.sqrt(dt))
-    d = 1 / u  # Check the no arbitrage condition (d < e^(r dt) < u ensures 0 < p < 1)
-
-    # Calculate the risk-neutral probability
-    p = (np.exp(r * dt) - d) / (u - d)
-    q = 1 - p  # This is the probability of a down movement
-
+    #Ensure the the probability is contained in the closed interval 
     if not 0 <= p <= 1:
-        raise ValueError("Non-Arbitrage Condition Failed: Risk-neutral probability must be between 0 and 1")
+        raise ValueError("Risk-neutral probability must be between 0 and 1")
 
     return dt, u, d, p, q
 
@@ -67,8 +79,11 @@ def binomial_tree_call(S, K, T, r, sigma, N):
     call_price: The price of the European call option
     '''
 
-    #Set up the price process 
-    dt, u, d, p, q = tree_parameters(T,r, sigma, N)
+    #Set up the price process and validate the strike and stock price
+    _validate_number("S", S, positive=True)
+    _validate_number("K", K, positive=True)
+
+    dt, u, d, p, q = tree_parameters(T, r, sigma, N)
 
     #Initalise the up and down movements of the stock price
     j = np.arange(N+1) #This is the number of up movements in the stock price
@@ -84,7 +99,6 @@ def binomial_tree_call(S, K, T, r, sigma, N):
 
     #Then using backwards induction we calculate the option price at each node of the tree
     for i in range(N-1, -1, -1):
-
         terminal_option_value = Z * (p * terminal_option_value[1:i+2] + q * terminal_option_value[0:i+1])
     return terminal_option_value[0]
 
@@ -108,8 +122,11 @@ def binomial_tree_put(S, K, T, r, sigma, N):
     put_price: The price of the European put option
     '''
 
-    #Set up the price process 
-    dt, u, d, p, q = tree_parameters(T,r, sigma, N)
+    #Set up the price process and validate the 
+    _validate_number("S", S, positive=True)
+    _validate_number("K", K, positive=True)
+
+    dt, u, d, p, q = tree_parameters(T, r, sigma, N)
 
     #Initalise the up and down movements of the stock price
     j = np.arange(N+1) #This is the number of up movements in the stock price
@@ -118,14 +135,13 @@ def binomial_tree_put(S, K, T, r, sigma, N):
     terminal_stock_price = S * (u**j) * (d**(N-j))
 
     #calculate the option value at each terminal node
-    terminal_option_value = np.maximum(K - terminal_stock_price, 0) #For call option (K-S)^+ - put (K-S)^+
+    terminal_option_value = np.maximum(K - terminal_stock_price, 0) #For call option (S-K)^+ - put (K-S)^+
 
     #Find the discounting factor of the call option 
     Z = np.exp(-r * dt)
 
     #Then using backwards induction we calculate the option price at each node of the tree
     for i in range(N-1, -1, -1):
-
         terminal_option_value = Z * (p * terminal_option_value[1:i+2] + q * terminal_option_value[0:i+1])
     
     return terminal_option_value[0]
