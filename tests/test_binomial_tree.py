@@ -25,7 +25,7 @@ def test_invalid_positive_inputs(price_function, parameter, value):
     inputs = dict(S=100, K=100, T=1, r=0.05, sigma=0.2, N=100) #Create a dictonary of valid inputs as a benchmark
     inputs[parameter] = value #update the dictonary based on the inputs
 
-    #Raises a value error related to the invalid parameter
+    #Check that a value error related to the invalid parameter is raised
     with pytest.raises(ValueError, match=parameter):
         price_function(**inputs) #unpacking the dictonary into arguments
 
@@ -71,4 +71,4 @@ def test_convergence_to_black_scholes(tree_price, bs_price):
 
     # We assert that the error related to the fine tree is smaller than the coarse one
     assert fine_error < coarse_error
-    assert fine_error < 0.005 # We check how close the fine tree price is to the black scholes price, smaller than 0.05 price units.
+    assert fine_error < 0.005 # We check how close the fine tree price is to the black scholes price, smaller than 0.005 price units.
