@@ -51,6 +51,6 @@ def test_put_call_parity(S, K, T, r, sigma):
 #Define a function to test some invalid inputs and test the program under these inputs
 def test_invalid_inputs(price_function, inputs):
     with pytest.raises(ValueError):
-        price_function(*inputs)
+        price_function(*inputs) #pass each value in the tuple seperately to the price_function
 
 # cd /workspaces/Quant_Project PYTHONPATH=src pytest tests/test_put_call_parity.py
